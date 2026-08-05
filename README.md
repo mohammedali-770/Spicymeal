@@ -1,19 +1,27 @@
 # Spicy Meal WhatsApp AI Inbox
 
-A standalone shared WhatsApp customer-service inbox for Spicy Meal. This repository is intentionally isolated from the SMA ordering application.
+Standalone shared WhatsApp customer-service inbox for Spicy Meal. This repository is intentionally isolated from the `SMA` ordering application.
 
-## MVP features
+## Readiness status
 
-- Shared inbox with queue, human, AI and urgent filters
+The MVP code includes the complete operational path but is not silently deployed:
+
+- Supabase email/password authentication and role-aware accounts
+- Admin team invitations and routing-team assignment
+- Shared inbox, queue, assignment, resolution and return-to-AI actions
 - Arabic and English conversations
-- Agent assignment, takeover, resolution and return-to-AI actions
-- Demo mode with no credentials or external traffic
-- Supabase Auth, RLS and tenant-ready organization boundaries
-- Meta webhook signature verification and idempotent message ingestion
-- Authenticated human replies through WhatsApp Cloud API
-- Mandatory human handover boundary for payments, refunds, complaints, food safety and explicit human requests
+- Meta webhook HMAC verification and duplicate-message protection
+- Sent, delivered, read and failed receipt tracking
+- AI replies from active approved knowledge articles only
+- Deterministic human handover before AI for payments, refunds, complaints, food safety and explicit human requests
+- Confidence-based handover and fail-closed AI/provider behavior
+- Least-loaded online-agent routing, with queue fallback
+- 24-hour service-window enforcement for free-form human replies
+- Tenant isolation, RLS, service-only RPCs and audit logging
+- Safe demo mode with no credentials or external traffic
+- Unit tests, pgTAP schema checks and GitHub CI
 
-## Local demo
+## Safe local demo
 
 ```bash
 cp .env.example .env
@@ -21,35 +29,24 @@ npm install
 npm run dev
 ```
 
-`VITE_DEMO_MODE=true` is the default. The demo never sends WhatsApp messages.
+`VITE_DEMO_MODE=true` is the default. Demo actions remain in browser memory and never call Meta, Supabase or OpenAI.
 
-## Live configuration
-
-Web variables:
+## Verification
 
 ```bash
-VITE_DEMO_MODE=false
-VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_ANON_KEY
-VITE_FUNCTIONS_URL=https://YOUR_PROJECT.supabase.co/functions/v1
+npm run check
 ```
 
-Edge Function secrets:
+This runs frontend type checking, routing tests and a production Vite build. CI also performs `deno check` on every Edge Function.
 
-```bash
-WHATSAPP_VERIFY_TOKEN=
-WHATSAPP_APP_SECRET=
-WHATSAPP_ACCESS_TOKEN=
-WHATSAPP_GRAPH_VERSION=vXX.0
-```
+## Live deployment
 
-## Rollout order
+Follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). The repository does not apply migrations, deploy functions, configure secrets or enable live WhatsApp traffic automatically.
 
-1. Review and apply `supabase/migrations/20260805150000_whatsapp_inbox_mvp.sql` in a non-production Supabase project.
-2. Create the organization, channel and staff memberships.
-3. Deploy `whatsapp-webhook` and `whatsapp-send`.
-4. Configure Meta webhook verification and subscribe the WhatsApp number to message events.
-5. Add approved knowledge articles before enabling AI automation.
-6. Validate inbound message, duplicate webhook, assignment, human reply and delivery receipt flows.
+## Current MVP boundary
 
-No migration or deployment is performed by this repository commit.
+- Text messages and interactive/button reply text are supported.
+- Unsupported media is routed to a human; secure media download/preview is deferred.
+- Free-form replies outside the customer-service window are blocked; an approved-template composer is deferred.
+- AI knowledge retrieval uses active approved articles for the organization; semantic/vector retrieval can be added after real content volume justifies it.
+- Lazywait order lookup is deferred until an identity-verification policy and API scope are approved.
