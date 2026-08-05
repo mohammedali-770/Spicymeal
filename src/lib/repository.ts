@@ -211,6 +211,7 @@ export const repository = {
     };
   },
 
+
   async loadKnowledge(): Promise<KnowledgeArticle[]> {
     if (demoMode) return structuredClone(knowledge);
     if (!supabase) throw new Error('Supabase is not configured');
@@ -251,11 +252,12 @@ export const repository = {
 
   subscribe(callback: () => void): () => void {
     if (demoMode || !supabase) return () => undefined;
-    const channel = supabase.channel('wa-inbox-live')
+    const client = supabase;
+    const channel = client.channel('wa-inbox-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_conversations' }, callback)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_messages' }, callback)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wa_memberships' }, callback)
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    return () => { void client.removeChannel(channel); };
   },
 };

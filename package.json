@@ -12,16 +12,16 @@
     "check": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.56.0",
-    "lucide-react": "0.468.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "@supabase/supabase-js": "^2.110.8",
+    "lucide-react": "^1.27.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
-    "@vitejs/plugin-react": "4.3.4",
-    "typescript": "5.7.2",
-    "vite": "6.0.7"
+    "@vitejs/plugin-react": "^6.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5"
   }
 }
