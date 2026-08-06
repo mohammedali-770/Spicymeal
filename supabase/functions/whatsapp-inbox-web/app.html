@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111a29">
+  <title>Spicy Meal WhatsApp Operations</title>
+  <link rel="stylesheet" href="./whatsapp-inbox-web/styles.css">
+</head>
+<body>
+  <main id="login" class="login">
+    <section class="login-card">
+      <div class="brand-mark">SM</div>
+      <p class="eyebrow">WHATSAPP OPERATIONS</p>
+      <h1>Shared inbox</h1>
+      <p class="muted">AI-assisted support with controlled human handover.</p>
+      <form id="login-form">
+        <label>Email<input id="email" type="email" required value="mohammed.ali@spicymeal.com.sa"></label>
+        <label>Password<input id="password" type="password" required></label>
+        <button class="primary wide">Sign in</button>
+      </form>
+      <p id="login-error" class="error hidden"></p>
+    </section>
+  </main>
+
+  <div id="app" class="app hidden">
+    <header class="topbar">
+      <div class="brand"><b>SM</b><span><strong>Spicy Meal</strong><small>WhatsApp Operations</small></span></div>
+      <div class="top-actions">
+        <span class="status">Live database</span>
+        <button id="knowledge-button">Knowledge</button>
+        <button id="team-button">Team</button>
+        <button id="password-button">Change password</button>
+        <span class="user"><i id="user-initials">MA</i><span><strong id="user-name">Mohammed</strong><small id="user-role">admin</small></span></span>
+        <button id="logout-button">Logout</button>
+      </div>
+    </header>
+
+    <aside class="rail">
+      <h3>Inbox</h3>
+      <button class="filter active" data-filter="all"><span>All</span><b id="all-count">0</b></button>
+      <button class="filter" data-filter="unassigned"><span>Queue</span><b id="queue-count">0</b></button>
+      <button class="filter" data-filter="mine"><span>Mine</span><b id="mine-count">0</b></button>
+      <button class="filter" data-filter="ai"><span>AI</span><b id="ai-count">0</b></button>
+      <button class="filter" data-filter="urgent"><span>Urgent</span><b id="urgent-count">0</b></button>
+      <section class="guardrail"><strong>AI guardrails</strong><p>Payments, refunds, complaints, food safety and explicit human requests always transfer to staff.</p></section>
+    </aside>
+
+    <section class="conversation-list">
+      <header class="list-head">
+        <div><span><small>CONVERSATIONS</small><h2 id="chat-count">0 chats</h2></span><button id="refresh-button">Refresh</button></div>
+        <input id="search" placeholder="Search name, phone or message">
+      </header>
+      <div id="cards" class="cards"></div>
+    </section>
+
+    <section id="chat" class="chat"><div class="empty"><h2>Select a conversation</h2></div></section>
+    <aside id="context" class="context"><div class="empty">Customer details</div></aside>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <section class="modal-card">
+      <header><h2 id="modal-title">Settings</h2><button id="modal-close">Close</button></header>
+      <div id="modal-content"></div>
+    </section>
+  </div>
+
+  <script type="module" src="./whatsapp-inbox-web/app.js"></script>
+</body>
+</html>
