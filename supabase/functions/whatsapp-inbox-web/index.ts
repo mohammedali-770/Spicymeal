@@ -1,6 +1,9 @@
-import html from './app.html' with { type: 'text' };
-import js from './app.js' with { type: 'text' };
-import css from './styles.css' with { type: 'text' };
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const admin = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+);
 
 const securityHeaders = {
   'Cache-Control': 'no-store',
@@ -10,9 +13,28 @@ const securityHeaders = {
   'Content-Security-Policy': "default-src 'self'; script-src 'self' https://esm.sh; style-src 'self'; connect-src 'self' https://esm.sh https://daifcmqjtkmkxxxnnyos.supabase.co wss://daifcmqjtkmkxxxnnyos.supabase.co; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
 };
 
-Deno.serve((request) => {
-  const path = new URL(request.url).pathname;
-  if (path.endsWith('/app.js')) return new Response(js, { headers: { ...securityHeaders, 'Content-Type': 'text/javascript; charset=utf-8' } });
-  if (path.endsWith('/styles.css')) return new Response(css, { headers: { ...securityHeaders, 'Content-Type': 'text/css; charset=utf-8' } });
-  return new Response(html, { headers: { ...securityHeaders, 'Content-Type': 'text/html; charset=utf-8' } });
+Deno.serve(async (request) => {
+  const pathname = new URL(request.url).pathname;
+  const assetPath = pathname.endsWith('/app.js')
+    ? '/app.js'
+    : pathname.endsWith('/styles.css')
+      ? '/styles.css'
+      : '/';
+
+  const { data, error } = await admin
+    .from('wa_web_assets')
+    .select('content_type,body')
+    .eq('path', assetPath)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Unable to load web asset', error.message);
+    return new Response('Web console unavailable', { status: 500, headers: securityHeaders });
+  }
+  if (!data) return new Response('Not found', { status: 404, headers: securityHeaders });
+
+  return new Response(data.body, {
+    status: 200,
+    headers: { ...securityHeaders, 'Content-Type': data.content_type },
+  });
 });
