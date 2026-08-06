@@ -1,7 +1,6 @@
-const root = new URL('.', import.meta.url);
-const html = await Deno.readTextFile(new URL('app.html', root));
-const js = await Deno.readTextFile(new URL('app.js', root));
-const css = await Deno.readTextFile(new URL('styles.css', root));
+import html from './app.html' with { type: 'text' };
+import js from './app.js' with { type: 'text' };
+import css from './styles.css' with { type: 'text' };
 
 const securityHeaders = {
   'Cache-Control': 'no-store',
@@ -13,11 +12,7 @@ const securityHeaders = {
 
 Deno.serve((request) => {
   const path = new URL(request.url).pathname;
-  if (path.endsWith('/app.js')) {
-    return new Response(js, { headers: { ...securityHeaders, 'Content-Type': 'text/javascript; charset=utf-8' } });
-  }
-  if (path.endsWith('/styles.css')) {
-    return new Response(css, { headers: { ...securityHeaders, 'Content-Type': 'text/css; charset=utf-8' } });
-  }
+  if (path.endsWith('/app.js')) return new Response(js, { headers: { ...securityHeaders, 'Content-Type': 'text/javascript; charset=utf-8' } });
+  if (path.endsWith('/styles.css')) return new Response(css, { headers: { ...securityHeaders, 'Content-Type': 'text/css; charset=utf-8' } });
   return new Response(html, { headers: { ...securityHeaders, 'Content-Type': 'text/html; charset=utf-8' } });
 });
