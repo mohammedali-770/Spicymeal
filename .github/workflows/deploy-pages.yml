@@ -1,4 +1,4 @@
-name: Build live WhatsApp inbox
+name: Publish live WhatsApp inbox
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   VITE_DEMO_MODE: "false"
@@ -15,18 +15,28 @@ env:
   VITE_FUNCTIONS_URL: "https://daifcmqjtkmkxxxnnyos.supabase.co/functions/v1"
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: npm install --ignore-scripts
       - run: npm run check
-      - uses: actions/upload-artifact@v4
-        with:
-          name: live-inbox-dist
-          path: dist
-          if-no-files-found: error
-          retention-days: 7
+      - name: Publish verified build to gh-pages
+        run: |
+          rm -rf /tmp/whatsapp-inbox-site
+          mkdir -p /tmp/whatsapp-inbox-site
+          cp -R dist/. /tmp/whatsapp-inbox-site/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages
+          git rm -rf .
+          cp -R /tmp/whatsapp-inbox-site/. .
+          touch .nojekyll
+          git add -A
+          git commit -m "deploy: live WhatsApp inbox ${GITHUB_SHA}"
+          git push --force origin gh-pages
