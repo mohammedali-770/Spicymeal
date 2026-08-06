@@ -31,6 +31,8 @@ jobs:
           VITE_SUPABASE_ANON_KEY: "sb_publishable_vFjCrktsy1JyidvMIo1CXg_Ox7VioRv"
           VITE_FUNCTIONS_URL: "https://daifcmqjtkmkxxxnnyos.supabase.co/functions/v1"
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
