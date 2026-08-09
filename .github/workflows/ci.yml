@@ -7,7 +7,6 @@ on:
       - 'tests/**'
       - 'supabase/**'
       - 'package.json'
-      - 'package-lock.json'
       - 'tsconfig*.json'
       - 'vite.config.*'
   push:
@@ -17,7 +16,6 @@ on:
       - 'tests/**'
       - 'supabase/**'
       - 'package.json'
-      - 'package-lock.json'
       - 'tsconfig*.json'
       - 'vite.config.*'
 
@@ -36,11 +34,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: npm ci --ignore-scripts
+      - run: npm install --ignore-scripts
       - run: npm run check
       - name: Check Edge Functions
         run: >-
