@@ -1,25 +1,51 @@
 name: CI
+
 on:
   pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'supabase/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'supabase/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
+
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  web:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --ignore-scripts
-      - run: npm run check
-  edge-functions:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+          cache: npm
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno check supabase/functions/whatsapp-webhook/index.ts supabase/functions/whatsapp-send/index.ts supabase/functions/whatsapp-orchestrator/index.ts supabase/functions/whatsapp-team-admin/index.ts
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - name: Check Edge Functions
+        run: >-
+          deno check
+          supabase/functions/whatsapp-webhook/index.ts
+          supabase/functions/whatsapp-send/index.ts
+          supabase/functions/whatsapp-orchestrator/index.ts
+          supabase/functions/whatsapp-team-admin/index.ts

@@ -1,12 +1,14 @@
 name: Publish live WhatsApp inbox
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: whatsapp-inbox-publish
+  cancel-in-progress: true
 
 env:
   VITE_DEMO_MODE: "false"
@@ -24,7 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --ignore-scripts
+          cache: npm
+      - run: npm ci --ignore-scripts
       - run: npm run check
       - name: Publish verified build to gh-pages
         run: |
