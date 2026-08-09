@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/demo.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/ChatComponents.tsx","./src/components/KnowledgeModal.tsx","./src/components/Login.tsx","./src/components/TeamModal.tsx","./src/lib/repository.ts","./src/lib/supabase.ts"],"version":"5.9.3"}
