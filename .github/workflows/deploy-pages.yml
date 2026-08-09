@@ -2,6 +2,10 @@ name: Publish live WhatsApp inbox
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.deploy/whatsapp-inbox'
 
 permissions:
   contents: write
