@@ -63,11 +63,37 @@ export default function App() {
   useEffect(() => { void initialize(); }, [initialize]);
   useEffect(() => user ? repository.subscribe(() => void load(true)) : undefined, [user, load]);
   useEffect(() => {
+    if (!user || demoMode) return undefined;
+    let mounted = true;
+    const heartbeat = () => {
+      if (mounted && document.visibilityState === 'visible' && navigator.onLine) {
+        void repository.setPresence(true).catch(() => undefined);
+      }
+    };
+    const markOffline = () => { void repository.setPresence(false).catch(() => undefined); };
+    heartbeat();
+    const timer = window.setInterval(heartbeat, 60_000);
+    const onVisibility = () => { if (document.visibilityState === 'visible') heartbeat(); };
+    window.addEventListener('online', heartbeat);
+    window.addEventListener('pagehide', markOffline);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      mounted = false;
+      window.clearInterval(timer);
+      window.removeEventListener('online', heartbeat);
+      window.removeEventListener('pagehide', markOffline);
+      document.removeEventListener('visibilitychange', onVisibility);
+      markOffline();
+    };
+  }, [user?.id]);
+  useEffect(() => {
     if (!selectedId) { setMessages([]); return; }
     void repository.loadMessages(selectedId).then(setMessages).catch((cause: unknown) => setError(cause instanceof Error ? cause.message : 'Unable to load messages'));
   }, [selectedId, data]);
 
   const selected = data.conversations.find((conversation) => conversation.id === selectedId) ?? null;
+  const canActOnSelected = Boolean(selected && user.role !== 'viewer' && (user.role !== 'agent' || selected.assignedAgentId === user.id));
+  const canSend = Boolean(canActOnSelected && selected?.status !== 'resolved');
   const metrics = useMemo(() => ({
     open: data.conversations.filter((conversation) => conversation.status !== 'resolved').length,
     waiting: data.conversations.filter((conversation) => conversation.owner === 'unassigned').length,
@@ -131,11 +157,11 @@ export default function App() {
         {selected.owner === 'unassigned' && user.role !== 'viewer' && <button className="primary" disabled={busy} onClick={() => void act(() => repository.assign(selected.id, user.id))}><UserRoundCheck size={16}/> Take chat</button>}
         <AgentSelect agents={data.agents} value={selected.assignedAgentId} disabled={busy || !['admin', 'supervisor'].includes(user.role)} onChange={(agentId) => void act(() => repository.assign(selected.id, agentId))}/>
         {selected.status !== 'resolved'
-          ? <button disabled={busy || user.role === 'viewer'} onClick={() => void act(() => repository.resolve(selected.id))}><CheckCircle2 size={16}/> Resolve</button>
-          : <button disabled={busy || user.role === 'viewer'} onClick={() => void act(() => repository.returnToAi(selected.id))}><Sparkles size={16}/> Return to AI</button>}
+          ? <button disabled={busy || !canActOnSelected} onClick={() => void act(() => repository.resolve(selected.id))}><CheckCircle2 size={16}/> Resolve</button>
+          : <button disabled={busy || !canActOnSelected} onClick={() => void act(() => repository.returnToAi(selected.id))}><Sparkles size={16}/> Return to AI</button>}
       </div></header>
       <section className="messages">{messages.map((message) => <article key={message.id} className={`bubble ${message.direction} ${message.isNote ? 'note' : ''}`} dir={/[\u0600-\u06FF]/.test(message.body) ? 'rtl' : 'ltr'}><small>{message.senderName}</small><p>{message.body}</p><time>{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {message.deliveryStatus}</time></article>)}</section>
-      <Composer disabled={busy || user.role === 'viewer' || selected.status === 'resolved'} onSend={async (body) => { await act(async () => { const message = await repository.send(selected.id, body); setMessages((current) => [...current, message]); }); }}/>
+      <Composer disabled={busy || !canSend} onSend={async (body) => { await act(async () => { const message = await repository.send(selected.id, body); setMessages((current) => [...current, message]); }); }}/>
     </> : <div className="empty"><Inbox/><h2>Select a conversation</h2></div>}</main>
 
     <aside className="context">{selected && <>
